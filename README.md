@@ -1,1 +1,1 @@
-# netflix_project_sql
+# Netflix Content Analytics & Business Insights using SQL
