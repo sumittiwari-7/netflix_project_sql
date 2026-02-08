@@ -20,3 +20,6 @@ This project analyzes the Netflix dataset using PostgreSQL to uncover insights i
 -  **Dataset Link:** [Movies Dataset](https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download)
 
 -  ## Schema
+-  
+
+ 
