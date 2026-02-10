@@ -107,7 +107,7 @@ SELECT
 
 
 ```sql
-SSELECT
+SELECT
 		EXTRACT (YEAR FROM TO_DATE(date_added,'Month DD, YYYY'))as year,
 		COUNT(*),
 		COUNT(*)::NUMERIC/(SELECT COUNT(*) FROM Netflix where country ='India')* 100 as avg_content_per_year
