@@ -227,7 +227,6 @@ SELECT
 		GROUP BY country
 		ORDER BY country_rank;
 ```
-
 **Objective:**Evaluate country-level contributions to Netflix’s catalog by calculating content volume and percentage share.
 
 ## Findings and Conclusion
@@ -239,6 +238,40 @@ SELECT
 - **Genre Preference:** Drama, Comedy, and Documentaries dominate the platform’s content library.
   
 This analysis provides a comprehensive view of Netflix's content and can help inform content strategy and decision-making.
+
+
+---
+
+## Query Optimization & Readability Theory
+
+- Used CTEs to break complex logic into readable steps.
+- Filtered data early to reduce unnecessary computation.
+- Avoided repeated calculations by reusing intermediate results.
+- Prioritized clarity and maintainability over one-line queries.
+
+---
+
+## Technology Stack
+- **Database**: PostgreSQL
+- **SQL Queries**: DDL, DML, Aggregations, Subqueries, Data handling & Filtering
+- **Tools**: pgAdmin 4 , PostgreSQL
+
+- ## How to Run the Project
+1. Install PostgreSQL and pgAdmin (if not already installed).
+2. Set up the database schema and tables using the provided normalization structure.
+3. Insert the sample data into the respective tables.
+4. Execute SQL queries to solve the listed problems.
+5. Explore query optimization techniques for large datasets.
+
+---
+
+## Next Steps
+- **Visualize the Data**: Use a data visualization tool like **Tableau** or **Power BI** to create dashboards based on the query results.
+- **Expand Dataset**: Add more rows to the dataset for broader analysis and scalability testing.
+- **Advanced Querying**: Dive deeper into query optimization and explore the performance of SQL queries on larger datasets.
+
+---
+
 
 
 
