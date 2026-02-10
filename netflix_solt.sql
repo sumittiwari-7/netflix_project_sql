@@ -28,7 +28,7 @@ CREATE TABLE Netflix
 
 
 
-	--15 Buisness Problems
+	-- Buisness Problems
 
 1. find content added in the last 5 years.
 
@@ -185,6 +185,7 @@ CREATE TABLE Netflix
 
 
 	
+
 
 
 
