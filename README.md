@@ -103,8 +103,7 @@ SELECT
 
 **Objective:** Measure the volume of content available in each genre by breaking down multi-genre listings.
 
-### 6. Find each year and the average numbers of content release by India on Netflix
-   return top 5 year with highest average content release!
+### 6. Find each year and the average numbers of content release by India on Netflix return top 5 year with highest average content release!
 
 
 ```sql
