@@ -255,7 +255,3 @@ ORDER BY country_rank;
 
 ---
 
-## Next Steps
-- **Visualize the Data:** Build a Power BI or Tableau dashboard on top of these SQL findings.
-- **Expand Dataset:** Add more recent data for broader analysis and trend validation.
-- **Advanced Querying:** Explore query performance optimization on larger datasets.
