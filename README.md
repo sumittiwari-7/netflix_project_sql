@@ -309,14 +309,3 @@ LIMIT 10;
 
 ---
 
-## Next Steps
-
-- Build a Power BI dashboard to visualize India vs global benchmarks visually.
-- Expand with external data (IMDb ratings, subscriber counts) for deeper validation.
-- Apply the same framework to competitor platforms (Amazon Prime, Hotstar) for a full comparative OTT market study.
-
----
-
-## Resume Line for This Project
-
-> *"Conducted OTT India market expansion analysis on 8,800+ Netflix titles using PostgreSQL — identifying genre gaps and content mix misalignment, with strategic recommendations for improving Netflix India's subscriber retention."*
