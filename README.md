@@ -1,25 +1,40 @@
-# Netflix Content Analytics & Business Insights using SQL
+# OTT India Market Expansion Study — SQL Analytics on Netflix Content Data
 
 ![Netflix logo](https://github.com/sumittiwari-7/netflix_project_sql/blob/main/netflix%20logo.jpg)
 
-## Business Context
-Netflix's content strategy team needs to understand which regions, genres, and content types are driving the most catalog growth — enabling smarter acquisition, production, and investment decisions. This analysis answers key business questions using structured SQL queries on Netflix's global content dataset.
+---
 
-## Overview
-This project analyzes the Netflix dataset using PostgreSQL to uncover insights into content distribution, growth trends, and regional contributions. It explores genres, directors, actors, and content characteristics through structured SQL queries. The analysis applies intermediate and advanced SQL techniques such as CTEs, window functions, and text parsing.
+## Business Context
+
+India is one of the fastest-growing OTT markets in the world, with Netflix competing against JioCinema, Amazon Prime Video, and Disney+ Hotstar for regional dominance. Despite massive global expansion, Netflix's India-specific content strategy remains a key business challenge.
+
+> **Core Business Question: Is Netflix's current content investment aligned with Indian market demand — and where are the gaps?**
+
+This study uses PostgreSQL to analyze Netflix's global content catalog and extract strategic insights about India's position, genre preferences, content growth trends, and regional benchmarking — directly relevant to content acquisition and production decisions.
+
+---
 
 ## Objective
-- Analyze Netflix's content growth and distribution over time.
-- Identify dominant countries, genres, directors, and actors in Netflix's catalog.
-- Apply intermediate and advanced SQL concepts such as CTEs, window functions, and conditional logic.
-- Explore and categorize content based on specific criteria and keywords.
-- Deliver actionable business recommendations based on data findings.
+
+- Measure India's share and growth trajectory within Netflix's global catalog.
+- Identify which genres and content types are underrepresented for Indian audiences.
+- Benchmark India's content growth against top competing markets (US, UK).
+- Analyze content rating patterns to understand audience targeting strategy.
+- Deliver data-backed recommendations for Netflix's India content investment.
+
+---
 
 ## Dataset
-The data for this project is sourced from the Kaggle dataset:
-**Dataset Link:** [Netflix Shows Dataset](https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download)
+
+- **Source:** Kaggle — Netflix Shows Dataset
+- **Link:** [Netflix Shows Dataset](https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download)
+- **Size:** 8,800+ titles across movies and TV shows
+- **Coverage:** 2008–2021, 90+ countries
+
+---
 
 ## Schema
+
 ```sql
 DROP TABLE IF EXISTS netflix;
 CREATE TABLE netflix
@@ -39,219 +54,269 @@ CREATE TABLE netflix
 );
 ```
 
-## Business Problems and Solutions
-
-### 1. Find content added in the last 5 years.
-```sql
-SELECT 
-    *
-FROM netflix
-WHERE to_date(date_added,'Month DD, YYYY') >= CURRENT_DATE - INTERVAL '5 years';
-```
-**Objective:** Analyze Netflix's recent catalog growth by identifying content added within the last five years.
-
 ---
 
-### 2. Find the Directors with highest Netflix Presence.
+## Analysis & SQL Queries
+
+### 1. How much of Netflix's catalog comes from India vs other top countries?
+*(Uses: GROUP BY, ORDER BY)*
+
 ```sql
 SELECT
-    director,
-    COUNT(*) AS total_titles
+    country,
+    COUNT(*) AS total_content
 FROM netflix
-WHERE director IS NOT NULL
-GROUP BY director
-ORDER BY total_titles DESC
+WHERE country IS NOT NULL
+GROUP BY country
+ORDER BY total_content DESC
 LIMIT 10;
 ```
-**Objective:** Identify the most prolific directors on Netflix based on the total number of titles they have contributed.
+
+**Business Insight:** Shows India's catalog share vs the US and UK — revealing how large the investment gap is for the Indian market.
 
 ---
 
-### 3. Find Genre-wise content distribution.
+### 2. How has India's content grown on Netflix year by year?
+*(Uses: GROUP BY, ORDER BY, Date Filter)*
+
+```sql
+SELECT
+    EXTRACT(YEAR FROM TO_DATE(date_added, 'Month DD, YYYY')) AS year,
+    COUNT(*) AS total_titles_added
+FROM netflix
+WHERE country = 'India'
+AND date_added IS NOT NULL
+GROUP BY 1
+ORDER BY year;
+```
+
+**Business Insight:** Tracks whether Netflix is speeding up or slowing down its India content investment year over year.
+
+---
+
+### 3. Is India's catalog more Movies or TV Shows — and is that the right strategy?
+*(Uses: GROUP BY, CASE WHEN)*
+
+```sql
+SELECT
+    type,
+    COUNT(*) AS total,
+    CASE
+        WHEN COUNT(*) > 500 THEN 'High Volume'
+        WHEN COUNT(*) BETWEEN 200 AND 500 THEN 'Medium Volume'
+        ELSE 'Low Volume'
+    END AS volume_category
+FROM netflix
+WHERE country ILIKE '%India%'
+GROUP BY type;
+```
+
+**Business Insight:** India's audiences are shifting toward binge-worthy series. If Netflix India is over-indexed on movies, that is a direct retention risk.
+
+---
+
+### 4. Which genres are most common in India's Netflix catalog?
+*(Uses: GROUP BY, WHERE, ORDER BY)*
+
 ```sql
 SELECT
     listed_in AS genre,
     COUNT(*) AS total_content
 FROM netflix
+WHERE country ILIKE '%India%'
 GROUP BY listed_in
-ORDER BY total_content DESC;
-```
-**Objective:** Understand the distribution of Netflix content across different genres.
-
----
-
-### 4. Find TV Shows with more than 5 seasons.
-```sql
-SELECT
-    title,
-    duration
-FROM netflix
-WHERE type = 'TV Show'
-AND CAST(SPLIT_PART(duration, ' ', 1) AS INTEGER) > 5;
-```
-**Objective:** Find long-running TV shows on Netflix with more than five seasons to assess viewer retention trends.
-
----
-
-### 5. Count the number of content items in each Genre.
-```sql
-SELECT
-    UNNEST(STRING_TO_ARRAY(listed_in,',')) AS Genre,
-    COUNT(show_id)
-FROM Netflix
-GROUP BY 1;
-```
-**Objective:** Measure the volume of content available in each genre by breaking down multi-genre listings.
-
----
-
-### 6. Find the top 5 years with the highest average content release by India on Netflix.
-```sql
-SELECT
-    EXTRACT(YEAR FROM TO_DATE(date_added,'Month DD, YYYY')) AS year,
-    COUNT(*),
-    COUNT(*)::NUMERIC / (SELECT COUNT(*) FROM Netflix WHERE country = 'India') * 100 AS avg_content_per_year
-FROM Netflix
-WHERE country = 'India'
-GROUP BY 1
-ORDER BY avg_content_per_year DESC
-LIMIT 5;
-```
-**Objective:** Analyze trends in Indian content production on Netflix by identifying years with the highest average releases.
-
----
-
-### 7. List all movies listed as Documentaries.
-```sql
-SELECT *
-FROM NETFLIX
-WHERE listed_in ILIKE '%documentaries';
-```
-**Objective:** Retrieve all Netflix titles classified under the Documentary genre.
-
----
-
-### 8. Find how many movies actor Salman Khan appeared in during the last 10 years.
-```sql
-SELECT
-    COUNT(*) AS total_movies
-FROM netflix
-WHERE casts ILIKE '%Salman Khan%'
-AND release_year > EXTRACT(YEAR FROM CURRENT_DATE) - 10;
-```
-**Objective:** Determine the number of movies featuring Salman Khan released on Netflix in the past decade.
-
----
-
-### 9. Find the top 10 actors who appeared in the highest number of movies produced in India.
-```sql
-SELECT
-    UNNEST(STRING_TO_ARRAY(casts,',')) AS actors,
-    COUNT(*) AS total_content
-FROM netflix
-WHERE country ILIKE '%India'
-GROUP BY 1
-ORDER BY 2 DESC
+ORDER BY total_content DESC
 LIMIT 10;
 ```
-**Objective:** Identify the most frequently appearing actors in Netflix content produced in India.
+
+**Business Insight:** Identifies which genres Netflix is betting on for Indian audiences — and which high-demand genres like Thriller or Crime are missing.
 
 ---
 
-### 10. Categorize content based on keywords 'kill' and 'violence' in the description.
-```sql
-WITH new_table AS (
-    SELECT
-        *,
-        CASE
-            WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad Content'
-            ELSE 'Good Content'
-        END AS Category
-    FROM Netflix
-)
-SELECT
-    Category,
-    COUNT(*) AS total_content
-FROM new_table
-GROUP BY 1;
-```
-**Objective:** Categorize Netflix content into "Good" or "Bad" based on the presence of violence-related keywords in descriptions.
+### 5. How does India compare to the US and UK in content volume?
+*(Uses: WHERE IN, GROUP BY, ORDER BY)*
 
----
-
-### 11. How has Netflix's content volume grown over time, and which year had the highest additions?
-```sql
-WITH yearly_content AS (
-    SELECT
-        release_year,
-        COUNT(*) AS total_content
-    FROM netflix
-    GROUP BY release_year
-)
-SELECT
-    release_year,
-    total_content,
-    RANK() OVER (ORDER BY total_content DESC) AS content_rank
-FROM yearly_content
-ORDER BY release_year;
-```
-**Objective:** Analyze year-wise growth in Netflix content and identify the year with the highest number of additions.
-
----
-
-### 12. Which countries dominate Netflix's catalog and what is their percentage contribution?
 ```sql
 SELECT
     country,
-    COUNT(*) AS total_content,
-    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage_share,
-    RANK() OVER (ORDER BY COUNT(*) DESC) AS country_rank
+    type,
+    COUNT(*) AS total_titles
 FROM netflix
-WHERE country IS NOT NULL
-GROUP BY country
-ORDER BY country_rank;
+WHERE country IN ('India', 'United States', 'United Kingdom')
+GROUP BY country, type
+ORDER BY country, total_titles DESC;
 ```
-**Objective:** Evaluate country-level contributions to Netflix's catalog by calculating content volume and percentage share.
+
+**Business Insight:** Directly benchmarks India's content mix against Netflix's two biggest markets — showing exactly where India's strategy diverges.
 
 ---
 
-## Key Findings & Business Recommendations
+### 6. What audience age groups is Netflix targeting in India?
+*(Uses: GROUP BY, ORDER BY, WHERE)*
 
-### Findings
-- **US Dominance:** The United States contributes the largest share of Netflix's catalog, followed by India and the United Kingdom.
-- **India's Fast Growth:** Indian content shows consistent year-over-year growth, reflecting Netflix's increasing regional investment in South Asia.
-- **Genre Concentration:** Drama, Comedy, and Documentaries dominate the platform — together accounting for the majority of all content.
-- **Recent Expansion:** A large portion of content has been added in the last 5 years, indicating aggressive catalog expansion.
-- **Long-running Shows:** A significant number of TV shows have run beyond 5 seasons, pointing to strong viewer retention in certain genres.
+```sql
+SELECT
+    rating,
+    COUNT(*) AS total_content
+FROM netflix
+WHERE country ILIKE '%India%'
+AND rating IS NOT NULL
+GROUP BY rating
+ORDER BY total_content DESC;
+```
 
-### Recommendations
-1. **Double down on Indian content** — YoY growth trend makes it the highest-potential regional market for new production investment.
-2. **Diversify beyond Drama/Comedy** — Over-indexing on two genres creates churn risk; investing in Thriller and True Crime could attract new audience segments.
-3. **Prioritize long-running show renewals** — Shows with 5+ seasons demonstrate strong retention; these should be prioritized for renewal decisions.
-4. **Audit low-rated content** — Content flagged under violence keywords should be reviewed for proper age-gating to reduce regulatory risk.
-5. **Expand documentary catalog** — Documentaries punch above their weight in engagement; targeted investment here offers high ROI.
+**Business Insight:** Reveals whether Netflix India skews adult, teen, or family — and whether this matches India's young demographic profile.
 
 ---
 
-## Query Optimization & Readability
-- Used CTEs to break complex logic into readable, maintainable steps.
-- Filtered data early in queries to reduce unnecessary computation.
-- Avoided repeated calculations by reusing intermediate results.
-- Prioritized clarity and maintainability over condensed one-line queries.
+### 7. Categorize India's Netflix content by how old it is
+*(Uses: CASE WHEN, GROUP BY)*
+
+```sql
+SELECT
+    CASE
+        WHEN release_year >= 2020 THEN 'Very Recent (2020+)'
+        WHEN release_year BETWEEN 2015 AND 2019 THEN 'Recent (2015-2019)'
+        WHEN release_year BETWEEN 2010 AND 2014 THEN 'Older (2010-2014)'
+        ELSE 'Classic (Before 2010)'
+    END AS content_age_group,
+    COUNT(*) AS total_titles
+FROM netflix
+WHERE country ILIKE '%India%'
+GROUP BY 1
+ORDER BY total_titles DESC;
+```
+
+**Business Insight:** Shows whether Netflix India's catalog is fresh or outdated — fresh content is key to reducing subscriber churn.
+
+---
+
+### 8. Which Indian directors appear most on Netflix?
+*(Uses: WHERE, GROUP BY, ORDER BY)*
+
+```sql
+SELECT
+    director,
+    COUNT(*) AS total_titles
+FROM netflix
+WHERE country ILIKE '%India%'
+AND director IS NOT NULL
+GROUP BY director
+ORDER BY total_titles DESC
+LIMIT 10;
+```
+
+**Business Insight:** Identifies Netflix's key Indian creative partnerships — important for talent retention and exclusive content deal strategy.
+
+---
+
+### 9. Flag Indian content that may face regulatory risk in India
+*(Uses: CASE WHEN, WHERE, GROUP BY)*
+
+```sql
+SELECT
+    title,
+    listed_in,
+    rating,
+    CASE
+        WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Needs Review'
+        ELSE 'Clear'
+    END AS compliance_flag
+FROM netflix
+WHERE country ILIKE '%India%'
+ORDER BY compliance_flag DESC
+LIMIT 20;
+```
+
+**Business Insight:** India has strict content regulations (IT Rules 2021). Flagging sensitive content helps Netflix proactively manage regulatory compliance risk.
+
+---
+
+### 10. What are the most recent Indian titles added to Netflix?
+*(Uses: WHERE, ORDER BY, Date Function)*
+
+```sql
+SELECT
+    title,
+    type,
+    date_added,
+    listed_in AS genre,
+    rating
+FROM netflix
+WHERE country ILIKE '%India%'
+AND date_added IS NOT NULL
+ORDER BY TO_DATE(date_added, 'Month DD, YYYY') DESC
+LIMIT 10;
+```
+
+**Business Insight:** The most recently added Indian titles reveal Netflix's current India content priorities — genres, formats, and audience targets they are actively investing in right now.
+
+---
+
+## Key Findings
+
+| # | Finding | Business Implication |
+|---|---------|---------------------|
+| 1 | US dominates Netflix catalog; India is top 3 but significantly behind | Large investment gap exists for India |
+| 2 | India content additions grew sharply after 2018 | Netflix is accelerating India strategy but started late |
+| 3 | India catalog is heavily movie-skewed | Misaligned with India's growing appetite for series |
+| 4 | Drama and Comedy dominate India's genres | Thriller, Crime, Reality genres are underserved |
+| 5 | Adult-rated content dominates India's catalog | Family and children's content is a major gap |
+
+---
+
+## Business Recommendations
+
+1. **Increase series investment for India** — India's catalog is over-indexed on movies while audiences are shifting to binge-worthy series. Closing this gap could directly improve monthly retention.
+
+2. **Invest in underrepresented genres** — Thriller, True Crime, and Reality content are significantly underserved in India's catalog. These genres drive high engagement on competing platforms like JioCinema.
+
+3. **Build a family content pipeline for India** — The gap in family and children's content is a missed opportunity given India's young demographic profile.
+
+4. **Lock in exclusive Indian creator deals** — Top Indian directors appear repeatedly in the catalog. Exclusive partnerships with key creators would defend against content poaching by Amazon and Disney.
+
+5. **Invest in regional language originals** — Tamil, Telugu, and Malayalam content has shown strong global crossover appeal. A regional language content fund could drive both India retention and international growth.
+
+---
+
+## SQL Concepts Used
+
+| Concept | Used In |
+|---|---------|
+| WHERE + LIKE / ILIKE | Queries 1, 4, 6, 7, 8, 9, 10 |
+| GROUP BY + ORDER BY | All queries |
+| CASE WHEN | Queries 3, 7, 9 |
+| Subquery / IN filter | Query 5 |
+| Date Functions (EXTRACT, TO_DATE) | Queries 2, 10 |
+| String Filter (ILIKE) | Queries 3, 4, 6, 8, 9 |
 
 ---
 
 ## Technology Stack
-- **Database:** PostgreSQL
-- **SQL Techniques:** DDL, DML, Aggregations, Subqueries, CTEs, Window Functions, Text Parsing
-- **Tools:** pgAdmin 4, PostgreSQL
 
-## How to Run the Project
-1. Install PostgreSQL and pgAdmin (if not already installed).
-2. Run `Schemas.sql` to create the database schema.
-3. Import `netflix_titles.csv` into the netflix table.
-4. Execute queries from `Business_Problems.sql` and `Business_Solutions.sql`.
-5. Explore query optimization techniques for large datasets.
+- **Database:** PostgreSQL
+- **SQL Techniques:** Aggregations, Filtering, Grouping, Sorting, CASE WHEN, Date Functions
+- **Tools:** pgAdmin 4, PostgreSQL
 
 ---
 
+## How to Run
+
+1. Install PostgreSQL and pgAdmin.
+2. Run `Schemas.sql` to create the database schema.
+3. Import `netflix_titles.csv` into the netflix table.
+4. Execute queries from `Business_Problems.sql` and `Business_Solutions.sql`.
+
+---
+
+## Next Steps
+
+- Build a Power BI dashboard to visualize India vs global benchmarks visually.
+- Expand with external data (IMDb ratings, subscriber counts) for deeper validation.
+- Apply the same framework to competitor platforms (Amazon Prime, Hotstar) for a full comparative OTT market study.
+
+---
+
+## Resume Line for This Project
+
+> *"Conducted OTT India market expansion analysis on 8,800+ Netflix titles using PostgreSQL — identifying genre gaps and content mix misalignment, with strategic recommendations for improving Netflix India's subscriber retention."*
