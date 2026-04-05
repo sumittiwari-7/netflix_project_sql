@@ -1,4 +1,4 @@
-# OTT India Market Expansion Study — SQL Analytics on Netflix Content Data
+# OTT India Market Study — Netflix Data Insights using SQL
 
 ![Netflix logo](https://github.com/sumittiwari-7/netflix_project_sql/blob/main/netflix%20logo.jpg)
 
